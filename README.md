@@ -24,7 +24,7 @@ Hub-and-spoke keeps security tools in one central hub while spokes stay isolated
 Created the central hub network (`VNet-Hub`) with dedicated subnets for Firewall, Bastion, and future VPN.  
 → Provides a secure, organized place for shared services that all spokes can use.
 
-![Hub VNet Overview & Subnets](screenshots/phase1-hub-vnet-subnets-list.png)  
+![Hub VNet Overview & Subnets](phase1-hub-vnet-subnets-list.png)  
 *Hub VNet showing address space and special-purpose subnets*
 
 **Phase 2 – Spoke VNets**  
