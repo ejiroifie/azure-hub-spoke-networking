@@ -31,17 +31,17 @@ Created the central hub network (`VNet-Hub`) with dedicated subnets for Firewall
 Created two separate spokes (`VNet-Spoke-Dev` and `VNet-Spoke-Prod`) with non-overlapping address spaces.  
 → Simulates isolated development and production environments.
 
-![Spoke-Dev VNet Overview](screenshots/phase2-spoke-dev-vnet-overview.png)  
+![Spoke-Dev VNet Overview](phase2-spoke-dev-vnet-overview.png)  
 *Development spoke VNet*
 
-![Spoke-Prod VNet Overview](screenshots/phase2-spoke-prod-vnet-overview.png)  
+![Spoke-Prod VNet Overview](phase2-spoke-prod-vnet-overview.png)  
 *Production spoke VNet*
 
 **Phase 3 – VNet Peering**  
 Connected hub ↔ spokes (bidirectional peering, no direct spoke-to-spoke).  
 → Allows spokes to use hub security tools without exposing each other.
 
-![Hub Peerings – Connected Status](screenshots/phase3-hub-peerings-connected.png)  
+![Hub Peerings – Connected Status](phase3-hub-peerings-connected.png)  
 *Hub VNet peerings showing Connected status to both spokes*
 
 **Phase 4 – Security Controls**  
@@ -51,19 +51,19 @@ Connected hub ↔ spokes (bidirectional peering, no direct spoke-to-spoke).
 - Deployed Azure Bastion for secure browser-based RDP (no public IPs on VMs)  
 → Centralizes inspection, enforces least-privilege access, and enables safe remote management.
 
-![NSG Inbound Rules](screenshots/phase4-nsg-inbound-rules.png)  
+![NSG Inbound Rules](phase4-nsg-inbound-rules.png)  
 *NSG inbound rule allowing RDP from Bastion*
 
-![NSG Outbound Rules](screenshots/phase4-nsg-outbound-rules.png)  
+![NSG Outbound Rules](phase4-nsg-outbound-rules.png)  
 *NSG outbound rule allowing web traffic*
 
-![Azure Firewall Overview – Running](screenshots/phase4-azure-firewall-overview-running.png)  
+![Azure Firewall Overview – Running](phase4-azure-firewall-overview-running.png)  
 *Azure Firewall deployed and running*
 
-![Firewall Application Rules](screenshots/phase4-firewall-application-rules.png)  
+![Firewall Application Rules](phase4-firewall-application-rules.png)  
 *Application rule allowing *.microsoft.com*
 
-![Route Table – Routes](screenshots/phase4-route-table-routes-0-0-0-0-firewall.png)  
+![Route Table – Routes](phase4-route-table-routes-0-0-0-0-firewall.png)  
 *Route table forcing all internet traffic through Firewall*
 
 ![Route Table – Subnets Associated](screenshots/phase4-route-table-subnets-associated.png)  
