@@ -1,4 +1,4 @@
-# Azure Secure Hub-and-Spoke Networking Project
+# Azure Secure Hub-and-Spoke Networking 
 
 **Project Title**  
 Secure Enterprise Hub-and-Spoke Topology with Centralized Security
