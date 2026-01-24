@@ -12,7 +12,18 @@ The goal of this project was to demonstrate a secure, scalable Azure network des
 ## Executive Summary
 In modern cloud environments, a "flat" network is a major security risk—if one server is compromised, the entire network is vulnerable. This architecture separates "Development" and "Production" into isolated spokes, ensuring traffic only flows through a central "Security Hub." This provides a single point of control for inspecting traffic and managing the environment securely.
 
+---
 
+## Architecture Diagram
+*(Placeholder for your draw.io diagram)*
+![Azure Hub-and-Spoke Architecture](architecture-diagram.png)
+
+### Architecture Traffic Flow
+1. **Inbound Management:** Administrators connect via **Azure Bastion** (SSL/443), which then provides RDP access to VMs on private IPs.
+2. **Egress Control:** All workload traffic (0.0.0.0/0) is forced via a **User-Defined Route (UDR)** to the **Azure Firewall** (`10.0.1.4`).
+3. **Spoke Isolation:** VNet Peerings are configured between Hub-to-Dev and Hub-to-Prod. **No peering** exists between Dev and Prod, preventing lateral movement.
+
+---
 
 ## Key Technical Features
 | Feature | Benefit |
@@ -30,14 +41,17 @@ In modern cloud environments, a "flat" network is a major security risk—if one
 I began by creating the central Hub network and the resource group to house all assets.
 ![Resource Group Created](phase1-resource-group-created.png)
 ![Hub VNet Overview](phase1-hub-vnet-overview.png)
-![Hub Subnets (Firewall, Bastion, Gateway)](phase1-hub-vnet-subnets-list.png)
+![Hub Subnets List](phase1-hub-vnet-subnets-list.png)
 
 ### Phase 2: Spoke VNets (Dev & Prod)
-I deployed two separate VNets with non-overlapping address spaces to simulate environment isolation.
-![Spoke Dev Overview](phase2-spoke-dev-vnet-overview.png)
-![Spoke Dev Workload Subnet](phase2-spoke-dev-subnet-workload.png)
-![Spoke Prod Overview](phase2-spoke-prod-vnet-overview.png)
-![Spoke Prod Workload Subnet](phase2-spoke-prod-subnet-workload.png)
+I deployed two separate VNets with non-overlapping address spaces to simulate environment isolation:
+* **Spoke-Dev:** `10.10.0.0/16`
+* **Spoke-Prod:** `10.20.0.0/16`
+
+![Spoke Dev VNet Overview](phase2-spoke-dev-vnet-overview.png)
+![Spoke Dev Subnet](phase2-spoke-dev-subnet-workload.png)
+![Spoke Prod VNet Overview](phase2-spoke-prod-vnet-overview.png)
+![Spoke Prod Subnet](phase2-spoke-prod-subnet-workload.png)
 
 ### Phase 3: VNet Peering
 I connected the Spokes to the Hub. No direct peering exists between the spokes, forcing a Hub-and-Spoke traffic pattern.
@@ -46,17 +60,18 @@ I connected the Spokes to the Hub. No direct peering exists between the spokes, 
 ![Spoke Prod Peering](phase3-spoke-prod-peerings-connected.png)
 
 ### Phase 4: Security Controls & Routing
-This phase involved locking down the network using Azure Firewall, NSGs, and custom Route Tables (UDR).
-![Azure Firewall Running](phase4-azure-firewall-overview-running.png)
+This phase involved locking down the network using Azure Firewall, NSGs, and custom Route Tables (UDR). I configured a **0.0.0.0/0** route pointing to the Firewall private IP (`10.0.1.4`) to ensure all egress traffic is inspected.
+
+![Azure Firewall Overview](phase4-azure-firewall-overview-running.png)
 ![Firewall Application Rules](phase4-firewall-application-rules.png)
 ![NSG Overview](phase4-nsg-overview.png)
 ![NSG Inbound Rules](phase4-nsg-inbound-rules.png)
 ![NSG Outbound Rules](phase4-nsg-outbound-rules.png)
 ![Route Table Overview](phase4-route-table-overview.png)
-![UDR 0.0.0.0/0 to Firewall](phase4-route-table-routes-0-0-0-0-firewall.png)
-![Route Table Associated to Subnets](phase4-route-table-subnets-associated.png)
-![Spoke Dev Subnet Associated](phase4-spoke-dev-subnet-nsg-associated.png)
-![Spoke Prod Subnet Associated](phase4-spoke-prod-subnet-nsg-associated.png)
+![UDR 0.0.0.0/0 Route](phase4-route-table-routes-0-0-0-0-firewall.png)
+![Route Table Subnet Association](phase4-route-table-subnets-associated.png)
+![Spoke Dev NSG Association](phase4-spoke-dev-subnet-nsg-associated.png)
+![Spoke Prod NSG Association](phase4-spoke-prod-subnet-nsg-associated.png)
 
 ### Phase 5: Validation & Testing
 I verified the architecture worked as intended through connectivity and security tests.
@@ -65,18 +80,21 @@ I verified the architecture worked as intended through connectivity and security
 ![Bastion RDP Session](phase5-bastion-rdp-session-open.png)
 
 **Egress Firewall Testing (Browser):**
-![Microsoft.com Success](phase5-firewall-test-browser-microsoft-success.png)
-![Facebook.com Blocked](phase5-firewall-test-browser-facebook-success.png)
+![Microsoft Success](phase5-firewall-test-browser-microsoft-success.png)
+![Facebook Blocked](phase5-firewall-test-browser-facebook-success.png)
 
 **Network Command Line Validation:**
-![Test-NetConnection Microsoft True](phase5-powershell-test-netconnection-microsoft-true.png)
+Testing from source IP `10.10.0.4` (Dev Workload) confirmed that traffic to allowed domains was successful while unauthorized requests were dropped.
+![Test-NetConnection Microsoft](phase5-powershell-test-netconnection-microsoft-true.png)
 ![Test-NetConnection Facebook](phase5-powershell-test-netconnection-facebook-false.png)
 ![Invoke-WebRequest Microsoft](phase5-powershell-invoke-webrequest-microsoft-error.png)
-![Invoke-WebRequest Facebook Fail](phase5-powershell-invoke-webrequest-facebook-fail.png)
+![Invoke-WebRequest Facebook Fail](phase5-powershell-invoke-webrequest-facebook-fail.png.png)
+![Powershell Detailed Validation](powershell-invoke-microsoft-facebook.png)
 
 ---
 
 ## Technical Challenges Faced
+
 * **The "Invisible" Internet Path:** Initially, VMs tried to bypass the firewall using default routes. I solved this by implementing **User-Defined Routes (UDRs)** to override Azure's default routing logic.
 * **Secure Management:** Eliminated the risk of "Brute Force" attacks on RDP by removing all Public IPs and deploying **Azure Bastion**, ensuring all management happens over a secure SSL tunnel.
 
