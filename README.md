@@ -45,8 +45,8 @@ I began by creating the central Hub network and the resource group to house all 
 
 ### Phase 2: Spoke VNets (Dev & Prod)
 I deployed two separate VNets with non-overlapping address spaces to simulate environment isolation:
-* **Spoke-Dev:** `10.10.0.0/16`
-* **Spoke-Prod:** `10.20.0.0/16`
+* **Spoke-Dev:** `10.1.0.0/16`
+* **Spoke-Prod:** `10.2.0.0/16`
 
 ![Spoke Dev VNet Overview](phase2-spoke-dev-vnet-overview.png)
 ![Spoke Dev Subnet](phase2-spoke-dev-subnet-workload.png)
