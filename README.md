@@ -18,6 +18,40 @@ In modern cloud environments, a "flat" network is a major security risk—if one
 *(Placeholder for your draw.io diagram)*
 ![Azure Hub-and-Spoke Architecture](architecture-diagram.png)
 
+flowchart TD
+    subgraph Hub["🛡️ Hub VNet<br>Central Security Hub"]
+        FW["Azure Firewall<br>10.0.1.4<br>(Inspects ALL traffic)"]
+        Bastion["Azure Bastion<br>(Secure RDP over 443)"]
+    end
+
+    subgraph SpokeDev["Spoke-Dev VNet (10.1.0.0/16)<br>Development"]
+        Dev["Workload VMs<br>(Private IPs only)"]
+    end
+
+    subgraph SpokeProd["Spoke-Prod VNet (10.2.0.0/16)<br>Production"]
+        Prod["Workload VMs<br>(Private IPs only)"]
+    end
+
+    %% Peerings (only hub ↔ spokes)
+    Hub <-->|"VNet Peering"| SpokeDev
+    Hub <-->|"VNet Peering"| SpokeProd
+
+    %% Isolation
+    SpokeDev -.->|"NO DIRECT PEERING<br>(Lateral movement blocked)"| SpokeProd
+
+    %% Egress traffic forced through Firewall
+    Dev -->|"UDR: 0.0.0.0/0"| FW
+    Prod -->|"UDR: 0.0.0.0/0"| FW
+
+    %% Management flow
+    Admin["👤 Admin"] -->|"HTTPS 443"| Bastion
+    Bastion -->|"RDP (private)"| Dev
+    Bastion -->|"RDP (private)"| Prod
+
+    %% Internet egress
+    FW -->|"Inspected & Filtered"| Internet["🌐 Internet<br>(App rules block unwanted sites)"]
+
+
 ### Architecture Traffic Flow
 1. **Inbound Management:** Administrators connect via **Azure Bastion** (SSL/443), which then provides RDP access to VMs on private IPs.
 2. **Egress Control:** All workload traffic (0.0.0.0/0) is forced via a **User-Defined Route (UDR)** to the **Azure Firewall** (`10.0.1.4`).
